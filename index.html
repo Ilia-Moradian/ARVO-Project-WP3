@@ -46,11 +46,11 @@ tr.cur td{color:#f1c40f;font-weight:600}
     <option value="civil">Site maintenance &amp; civil works</option>
   </select>
   <label for="units">EPC demand for this work package (units / year)</label>
-  <input type="number" id="units" value="6000" step="500" min="500">
+  <input type="number" id="units" value="9000" step="500" min="500">
   <label for="profile">EPC profile (criteria weights)</label>
   <select id="profile"></select>
   <label for="radius">Buffer: max road distance — <span id="radiusV"></span> km</label>
-  <input type="range" id="radius" min="10" max="250" step="5" value="100">
+  <input type="range" id="radius" min="10" max="250" step="5" value="150">
   <label for="maxf">Max number of firms — <span id="maxfV"></span></label>
   <input type="range" id="maxf" min="1" max="15" value="6">
   <label><input type="checkbox" id="t3"> Include Tier 3 firms (what-if)</label>
@@ -92,8 +92,50 @@ function getDemand() {
   if (v === 'custom') return custom;
   return D.projects.find(p => p.id === v);
 }
+// Road distances and routes come live from the public OSRM demo server (OpenStreetMap data); results are cached in the browser.
+const OSRM = 'https://router.project-osrm.org';
+let store = {t: {}, r: {}}, roadStatus = 'pending', tick = 0, q = Promise.resolve();
+const inflight = {}, pend = {};
+try { store = JSON.parse(localStorage.getItem('arvo-osrm-v1')) || store; } catch (e) {}
+const save = () => { try { localStorage.setItem('arvo-osrm-v1', JSON.stringify(store)); } catch (e) {} };
+const key = d => d.lat.toFixed(4) + ',' + d.lon.toFixed(4);
+
+async function fetchTable(dem) {
+  const co = [[dem.lon, dem.lat]].concat(D.smes.map(s => [s.lon, s.lat])).map(c => c.join(',')).join(';');
+  const r = await fetch(OSRM + '/table/v1/driving/' + co + '?sources=0&destinations=' + D.smes.map((_, i) => i + 1).join(';') + '&annotations=distance');
+  const j = await r.json();
+  if (j.code !== 'Ok') throw new Error(j.code);
+  const m = {}; D.smes.forEach((s, i) => { const v = j.distances[0][i]; if (v != null) m[s.id] = v / 1000; });
+  return m;
+}
+function roadDist(dem) {
+  const k = key(dem);
+  if (store.t[k]) { roadStatus = 'ok'; return store.t[k]; }
+  if (!inflight[k]) {
+    inflight[k] = true;
+    fetchTable(dem).then(m => { store.t[k] = m; roadStatus = 'ok'; save(); update(); }).catch(() => { roadStatus = 'fail'; update(); });
+  }
+  return null;
+}
 function distTo(dem, s) {
-  return (dem.id && D.dist && D.dist[dem.id]) ? D.dist[dem.id][s.id] : hav(dem.lat, dem.lon, s.lat, s.lon) * D.detour;
+  const t = roadDist(dem);
+  return (t && t[s.id] != null) ? t[s.id] : hav(dem.lat, dem.lon, s.lat, s.lon) * D.detour;
+}
+function getRoute(dem, s, k) {
+  if (pend[k]) return pend[k];
+  const p = q.catch(() => {}).then(() => fetch(OSRM + '/route/v1/driving/' + dem.lon + ',' + dem.lat + ';' + s.lon + ',' + s.lat + '?overview=simplified&geometries=geojson'))
+    .then(r => r.json()).then(j => { const pts = j.routes[0].geometry.coordinates.map(c => [c[1], c[0]]); store.r[k] = pts; save(); return pts; });
+  q = p; p.catch(() => { delete pend[k]; });
+  return pend[k] = p;
+}
+function drawRoute(dem, s, my) {
+  const k = key(dem) + '>' + s.id;
+  const line = (pts, dash) => { if (my === tick) L.polyline(pts, {color: '#3498db', weight: 4, opacity: .65, dashArray: dash}).addTo(lineLayer); };
+  if (store.r[k]) return line(store.r[k]);
+  getRoute(dem, s, k).then(pts => line(pts)).catch(() => line([[dem.lat, dem.lon], [s.lat, s.lon]], '5,5'));
+}
+function setNote() {
+  $('srcnote').innerHTML = (roadStatus === 'ok' ? 'Road distances and routes: OSRM / OpenStreetMap. ' : roadStatus === 'fail' ? 'Road service unreachable: showing estimates (straight line × ' + D.detour + ', dashed lines). ' : 'Loading road distances… ') + 'Firm data is sample data.';
 }
 
 // Stage 1: PROMETHEE II net flow per firm. Stage 2: buffer, rank by net flow, pick until demand or firm limit.
@@ -122,12 +164,12 @@ const smeLayer = L.layerGroup().addTo(map), demLayer = L.layerGroup().addTo(map)
 D.projects.forEach(p => $('demand').add(new Option(p.name, p.id)));
 $('demand').add(new Option('Custom point (click the map)', 'custom'));
 Object.keys(PROFILES).forEach(k => $('profile').add(new Option(PROFILES[k].name, k)));
-$('srcnote').innerHTML = (D.distSource === 'osmnx' ? 'Road distances from OpenStreetMap network. ' : 'Placeholder distances (straight line × ' + D.detour + '). Run build_matrix.py for road distances. ') + 'Firm data is sample data.';
 
 map.on('click', e => { custom = {lat: e.latlng.lat, lon: e.latlng.lng}; $('demand').value = 'custom'; update(); });
 
 function update() {
   $('radiusV').textContent = $('radius').value; $('maxfV').textContent = $('maxf').value;
+  const my = ++tick;
   smeLayer.clearLayers(); demLayer.clearLayers(); lineLayer.clearLayers();
   const dem = getDemand(), msg = $('msg');
   D.projects.forEach(p => L.circleMarker([p.lat, p.lon], {radius: 11, color: dem && dem.id === p.id ? '#c0392b' : '#7f8c8d', weight: 4, fillColor: '#2c3e50', fillOpacity: 1, bubblingMouseEvents: false}).bindPopup('<b>' + p.name + '</b>').addTo(demLayer));
@@ -140,10 +182,11 @@ function update() {
   r.cand.forEach(c => {
     const inPool = r.pool.includes(c), sel = r.picked.includes(c);
     L.circleMarker([c.s.lat, c.s.lon], {radius: 5 + Math.sqrt(c.cap) / 10, fillColor: COL[c.tier], color: sel ? '#000' : '#2c3e50', weight: sel ? 3 : 1, fillOpacity: inPool ? .9 : .25, opacity: inPool ? 1 : .4, bubblingMouseEvents: false})
-      .bindPopup('<b>' + c.s.name + '</b><br>Tier ' + c.tier + ' (net flow ' + c.phi.toFixed(2) + ')<br>Capacity: ' + c.cap + ' units/yr<br>Lead time: ' + c.lead + ' d<br>Traceability: ' + c.trace + '<br>Road distance: ' + c.dist.toFixed(0) + ' km' + (sel ? '<br><b>Selected</b>' : inPool ? '' : '<br><i>Outside buffer or Tier 3</i>')).addTo(smeLayer);
-    if (sel) L.polyline([[dem.lat, dem.lon], [c.s.lat, c.s.lon]], {color: '#3498db', weight: 3, dashArray: '5,5'}).addTo(lineLayer);
+      .bindPopup('<b>' + c.s.name + '</b><br>Tier ' + c.tier + ' (net flow ' + c.phi.toFixed(2) + ')<br>Capacity: ' + c.cap + ' units/yr<br>Lead time: ' + c.lead + ' d<br>Traceability: ' + c.trace + '<br>Distance: ' + c.dist.toFixed(0) + ' km' + (roadStatus === 'ok' ? ' (road)' : ' (estimate)') + (sel ? '<br><b>Selected</b>' : inPool ? '' : '<br><i>Outside buffer or Tier 3</i>')).addTo(smeLayer);
+    if (sel) drawRoute(dem, c.s, my);
   });
 
+  setNote();
   $('cov').textContent = Math.round(r.cov * 100) + '%';
   $('nf').textContent = r.picked.length + ' / ' + cfg.maxf;
   $('capsel').textContent = r.got.toLocaleString();
