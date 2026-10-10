@@ -1,7 +1,7 @@
 window.DATA = {
  "detour": 1.3,
  // Paste your OpenRouteService key between the quotes. Leave empty to use only the public OSRM server.
- "orsKey": "",
+ "orsKey": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImVlNzEzNmM5NDdlYTQ4MGE5ZTgyOGY2YTBhYjEzODNjIiwiaCI6Im11cm11cjY0In0=",
  "projects": [{"id": "oulu-h2", "name": "Hydrogen project, Oulu (approx. location)", "lat": 65.0121, "lon": 25.4651}, {"id": "nivala-wind", "name": "Wind + battery project, Nivala (approx. location)", "lat": 63.9292, "lon": 24.9616}],
  "smes": [
   {"id": "s01", "name": "Oulu Fab Oy", "lat": 65.0121, "lon": 25.4651, "lead": 15, "trace": 0.8, "cap": {"metal": 2200, "electrical": 0, "logistics": 0, "civil": 400}},
