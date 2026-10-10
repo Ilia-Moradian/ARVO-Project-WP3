@@ -27,6 +27,9 @@ th,td{padding:5px 4px;text-align:left;border-bottom:1px solid #3d566e}
 tr.cur td{color:#f1c40f;font-weight:600}
 .legend{background:#fff;color:#333;padding:10px;border-radius:6px;line-height:1.7;box-shadow:0 0 12px rgba(0,0,0,.25);font-size:.8rem}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px}
+/* KSI logo above the zoom buttons */
+.logo{background:#fff;padding:6px 10px;border-radius:6px;box-shadow:0 1px 8px rgba(0,0,0,.35)}
+.logo img{display:block;height:46px;width:auto;max-width:240px}
 /* demand-project pins: bigger than firm dots, always above them */
 .pj{position:relative;width:0;height:0}
 .pj-pin{position:absolute;left:-17px;top:-41px;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#c0392b;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.55)}
@@ -105,8 +108,8 @@ function getDemand() {
 const ORS = 'https://api.heigit.org/openrouteservice/v2', OSRM = 'https://router.project-osrm.org';
 let store = {t: {}, r: {}}, roadStatus = 'pending', roadSrc = '', tick = 0, q = Promise.resolve();
 const inflight = {}, pend = {};
-try { store = JSON.parse(localStorage.getItem('arvo-road-v2')) || store; } catch (e) {}
-const save = () => { try { localStorage.setItem('arvo-road-v2', JSON.stringify(store)); } catch (e) {} };
+try { store = JSON.parse(localStorage.getItem('arvo-road-v3')) || store; } catch (e) {}
+const save = () => { try { localStorage.setItem('arvo-road-v3', JSON.stringify(store)); } catch (e) {} };
 const key = d => d.lat.toFixed(4) + ',' + d.lon.toFixed(4);
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const orsPost = (path, body) => fetch(ORS + path, {method: 'POST', headers: {'Authorization': D.orsKey, 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
@@ -193,7 +196,11 @@ function evaluate(cfg, prof) {
   return {cand, pool, picked, got, cov: Math.min(1, got / cfg.units), maxd: Math.max(0, ...picked.map(c => c.dist)), lead};
 }
 
-const map = L.map('map').setView([64.5, 25.0], 7);
+const map = L.map('map', {zoomControl: false}).setView([64.5, 25.0], 7);
+const logo = L.control({position: 'topleft'});   // KSI logo sits above the zoom buttons
+logo.onAdd = () => { const d = L.DomUtil.create('div', 'logo'); d.innerHTML = '<img src="KSI_logo_ENG.jpg" alt="Kerttu Saalasti Institute, University of Oulu" onerror="this.parentNode.style.display=\'none\'">'; L.DomEvent.disableClickPropagation(d); return d; };
+logo.addTo(map);
+L.control.zoom({position: 'topleft'}).addTo(map);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 18, attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
 const smeLayer = L.layerGroup().addTo(map), demLayer = L.layerGroup().addTo(map), lineLayer = L.layerGroup().addTo(map);
 
