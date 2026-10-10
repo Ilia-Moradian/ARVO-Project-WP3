@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ARVO Capacity Explorer – prototype v2</title>
+<title>ARVO Capacity Explorer</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 *{box-sizing:border-box}
@@ -13,8 +13,12 @@ body{margin:0;display:flex;height:100vh;font-family:'Segoe UI',Tahoma,sans-serif
 h2{margin:0 0 10px;color:#1abc9c;font-size:1.2rem;border-bottom:2px solid #34495e;padding-bottom:8px}
 h3{margin:16px 0 6px;font-size:.95rem;color:#f1c40f}
 label{display:block;margin:10px 0 3px;color:#bdc3c7;font-size:.82rem}
+label.chk{display:flex;gap:8px;align-items:center;color:#fff;font-size:.88rem;margin:14px 0}
 select,input[type=number]{width:100%;padding:8px;background:#34495e;color:#fff;border:1px solid #1abc9c;border-radius:4px;font-size:.9rem}
 input[type=range]{width:100%}
+button#go{width:100%;padding:13px;margin:6px 0 4px;background:#1abc9c;color:#fff;border:0;border-radius:6px;font-size:1rem;font-weight:700;cursor:pointer}
+button#go:hover{background:#16a085}
+button#go:disabled{background:#4b6074;cursor:wait}
 .note{background:#4a3f12;border-left:4px solid #f1c40f;padding:8px 10px;margin:6px 0;font-size:.8rem;line-height:1.4}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .box{background:#34495e;border-left:4px solid #1abc9c;border-radius:6px;padding:8px 10px}
@@ -29,14 +33,16 @@ tr.cur td{color:#f1c40f;font-weight:600}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px}
 /* KSI logo above the zoom buttons */
 .logo{background:#fff;padding:6px 10px;border-radius:6px;box-shadow:0 1px 8px rgba(0,0,0,.35)}
-.logo img{display:block;height:46px;width:auto;max-width:240px}
-/* demand-project pins: bigger than firm dots, always above them */
+.logo img{display:block;height:55px;width:auto;max-width:288px}
+/* project pins: bigger than firm dots, always above them */
 .pj{position:relative;width:0;height:0}
+.pj-dot{position:absolute;left:-6px;top:-6px;width:12px;height:12px;border-radius:50%;background:#1b2a49;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.6)}
 .pj-pin{position:absolute;left:-17px;top:-41px;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#c0392b;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.55)}
-.pj-pin span{display:block;transform:rotate(45deg);text-align:center;line-height:28px;font-size:17px;color:#fff}
+.pj-pin::after{content:'';position:absolute;left:50%;top:50%;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;background:#fff}
 .pj-tag{position:absolute;left:24px;top:-38px;white-space:nowrap;background:#c0392b;color:#fff;padding:3px 9px;border-radius:4px;font:600 12px 'Segoe UI',Tahoma,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,.4)}
 .pj.on::before{content:'';position:absolute;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;border:3px solid #c0392b;animation:pulse 1.6s ease-out infinite}
 .pj.off .pj-pin{background:#7f8c8d;transform:rotate(-45deg) scale(.8);transform-origin:50% 100%}
+.pj.off .pj-dot{background:#7f8c8d}
 .pj.off .pj-tag{background:#7f8c8d;font-size:11px;opacity:.85}
 @keyframes pulse{0%{transform:scale(.6);opacity:1}100%{transform:scale(2);opacity:0}}
 @media(max-width:800px){body{flex-direction:column;height:auto}#map{height:55vh;flex:none}#side{max-width:none}}
@@ -48,36 +54,37 @@ tr.cur td{color:#f1c40f;font-weight:600}
   <h2>ARVO Capacity Explorer</h2>
   <div class="note" id="srcnote"></div>
 
-  <label for="demand">Demand location</label>
+  <label for="demand">Where is the project?</label>
   <select id="demand"></select>
-  <label for="svc">EPC work package</label>
+  <label for="svc">What does the project need?</label>
   <select id="svc">
-    <option value="metal">Heavy metal fabrication &amp; welding</option>
-    <option value="electrical">Electrical &amp; hydrogen components</option>
-    <option value="logistics">Industrial logistics &amp; transport</option>
-    <option value="civil">Site maintenance &amp; civil works</option>
+    <option value="metal">Metal fabrication and welding</option>
+    <option value="electrical">Electrical and hydrogen equipment</option>
+    <option value="logistics">Transport and logistics</option>
+    <option value="civil">Site services and civil works</option>
   </select>
-  <label for="units">EPC demand for this work package (units / year)</label>
+  <label for="units">How much is needed? (units per year)</label>
   <input type="number" id="units" value="9000" step="500" min="500">
-  <label for="profile">EPC profile (criteria weights)</label>
+  <label for="profile">What matters most to the buyer?</label>
   <select id="profile"></select>
-  <label for="radius">Buffer: max road distance — <span id="radiusV"></span> km</label>
+  <label for="radius">Maximum driving distance: <span id="radiusV"></span> km</label>
   <input type="range" id="radius" min="10" max="250" step="5" value="150">
-  <label for="maxf">Max number of firms — <span id="maxfV"></span></label>
+  <label for="maxf">Maximum number of firms: <span id="maxfV"></span></label>
   <input type="range" id="maxf" min="1" max="15" value="6">
-  <label><input type="checkbox" id="t3"> Include Tier 3 firms (what-if)</label>
+  <label class="chk"><input type="checkbox" id="t3"> Also include firms that need a lot of support</label>
 
+  <button id="go">Find local suppliers</button>
   <div id="msg"></div>
-  <div class="grid">
-    <div class="box"><b id="cov">–</b><span>Demand covered</span></div>
-    <div class="box"><b id="nf">–</b><span>Firms used</span></div>
-    <div class="box"><b id="capsel">–</b><span>Capacity of selected firms</span></div>
-    <div class="box"><b id="maxd">–</b><span>Farthest firm (km)</span></div>
+  <div class="grid" id="stats">
+    <div class="box"><b id="cov">–</b><span>Share of need covered</span></div>
+    <div class="box"><b id="nf">–</b><span>Firms involved</span></div>
+    <div class="box"><b id="capsel">–</b><span>Combined capacity</span></div>
+    <div class="box"><b id="maxd">–</b><span>Farthest firm (km by road)</span></div>
   </div>
-
-  <h3>Same settings, other EPC profiles</h3>
-  <table id="cmp"></table>
-  <div class="note">Profiles, tier cut-offs and all firm data are illustrative placeholders. Weights should come from the BWM/AHP step with EPCs.</div>
+  <div id="cmpwrap">
+    <h3>What if the buyer cared about something else?</h3>
+    <table id="cmp"></table>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -85,29 +92,31 @@ tr.cur td{color:#f1c40f;font-weight:600}
 <script>
 if (!window.DATA) { document.body.innerHTML = '<p style="color:#333;padding:20px">data.js not found next to index.html.</p>'; throw new Error('no data'); }
 const D = window.DATA, $ = id => document.getElementById(id);
-const T1 = 0.15, T2 = -0.15;                       // net-flow cut-offs: Tier 1 / Tier 2 / Tier 3
+const T1 = 0.15, T2 = -0.15;                       // readiness cut-offs
 const COL = {1: '#2ecc71', 2: '#f39c12', 3: '#e74c3c'};
-// weights order: capacity, lead time, digital traceability, road distance
+const TIERS = {1: 'Ready', 2: 'Needs some support', 3: 'Needs a lot of support'};
+// weights order: capacity, delivery time, tracking and records, distance
 const PROFILES = {
-  A: {name: 'A – Schedule-driven', w: [.20, .45, .15, .20]},
-  B: {name: 'B – Volume-driven', w: [.50, .20, .10, .20]},
-  C: {name: 'C – Traceability-driven', w: [.20, .20, .45, .15]}
+  A: {name: 'Fast delivery', w: [.20, .45, .15, .20]},
+  B: {name: 'Large volumes', w: [.50, .20, .10, .20]},
+  C: {name: 'Tracking and records', w: [.20, .20, .45, .15]}
 };
-let custom = null;
+let custom = null, ran = false;
 
 function hav(a, b, c, d2) {
   const r = Math.PI / 180, h = Math.sin((c - a) * r / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin((d2 - b) * r / 2) ** 2;
   return 12742 * Math.asin(Math.sqrt(h));
 }
+const shortName = p => p.name.replace(' (approx. location)', '');
 function getDemand() {
   const v = $('demand').value;
-  if (v === 'custom') return custom;
-  return D.projects.find(p => p.id === v);
+  return v === 'custom' ? custom : D.projects.find(p => p.id === v);
 }
+
 // Road distances and routes: OpenRouteService first (key in data.js), public OSRM demo server as fallback. Results are cached in the browser.
 const ORS = 'https://api.heigit.org/openrouteservice/v2', OSRM = 'https://router.project-osrm.org';
 let store = {t: {}, r: {}}, roadStatus = 'pending', roadSrc = '', tick = 0, q = Promise.resolve();
-const inflight = {}, pend = {};
+const inflight = {}, pend = {}, failed = {};
 try { store = JSON.parse(localStorage.getItem('arvo-road-v3')) || store; } catch (e) {}
 const save = () => { try { localStorage.setItem('arvo-road-v3', JSON.stringify(store)); } catch (e) {} };
 const key = d => d.lat.toFixed(4) + ',' + d.lon.toFixed(4);
@@ -140,7 +149,7 @@ function roadDist(dem) {
   if (c) { roadStatus = 'ok'; roadSrc = c.src; return c.m; }
   if (!inflight[k]) {
     inflight[k] = true;
-    fetchTable(dem).then(c => { store.t[k] = c; roadStatus = 'ok'; roadSrc = c.src; save(); update(); }).catch(() => { roadStatus = 'fail'; update(); });
+    fetchTable(dem).then(c => { store.t[k] = c; roadStatus = 'ok'; roadSrc = c.src; save(); update(); }).catch(() => { roadStatus = 'fail'; failed[k] = true; update(); });
   }
   return null;
 }
@@ -174,10 +183,13 @@ function drawRoute(dem, s, my) {
   getRoute(dem, s, k).then(pts => line(pts)).catch(() => line([[dem.lat, dem.lon], [s.lat, s.lon]], '5,5'));
 }
 function setNote() {
-  $('srcnote').innerHTML = (roadStatus === 'ok' ? 'Road distances and routes: ' + roadSrc + ' (OpenStreetMap data). ' : roadStatus === 'fail' ? 'Road service unreachable: showing estimates (straight line × ' + D.detour + ', dashed lines). ' : 'Loading road distances… ') + 'Firm data is sample data.';
+  const n = $('srcnote');
+  n.title = roadSrc;
+  n.textContent = roadStatus === 'fail' ? 'Demo with made-up firms. The road service is not reachable, so distances are rough estimates.'
+    : roadStatus === 'ok' ? 'Demo with made-up firms. Distances follow real roads.' : 'Loading road distances…';
 }
 
-// Stage 1: PROMETHEE II net flow per firm. Stage 2: buffer, rank by net flow, pick until demand or firm limit.
+// Step 1 scores every firm, step 2 picks the best ones inside the driving distance until the need is covered.
 function evaluate(cfg, prof) {
   const cand = D.smes.filter(s => s.cap[cfg.svc] > 0).map(s => ({s, cap: s.cap[cfg.svc], lead: s.lead, trace: s.trace, dist: distTo(cfg.demand, s), phi: 0}));
   const crit = [['cap', 1], ['lead', -1], ['trace', 1], ['dist', -1]], n = cand.length, rng = {};
@@ -204,49 +216,55 @@ L.control.zoom({position: 'topleft'}).addTo(map);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 18, attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
 const smeLayer = L.layerGroup().addTo(map), demLayer = L.layerGroup().addTo(map), lineLayer = L.layerGroup().addTo(map);
 
-D.projects.forEach(p => $('demand').add(new Option(p.name, p.id)));
-$('demand').add(new Option('Custom point (click the map)', 'custom'));
+D.projects.forEach(p => $('demand').add(new Option(shortName(p), p.id)));
+$('demand').add(new Option('My own location (click on the map)', 'custom'));
 Object.keys(PROFILES).forEach(k => $('profile').add(new Option(PROFILES[k].name, k)));
 
-map.on('click', e => { custom = {lat: e.latlng.lat, lon: e.latlng.lng}; $('demand').value = 'custom'; update(); });
+const reset = () => { ran = false; update(); };
+map.on('click', e => { custom = {lat: e.latlng.lat, lon: e.latlng.lng}; $('demand').value = 'custom'; reset(); });
+['demand', 'svc', 'units', 'profile', 'radius', 'maxf', 't3'].forEach(id => $(id).addEventListener('input', reset));
+$('go').addEventListener('click', () => { ran = true; update(); });
 
 function update() {
   $('radiusV').textContent = $('radius').value; $('maxfV').textContent = $('maxf').value;
-  const my = ++tick;
+  const my = ++tick; setNote();
   smeLayer.clearLayers(); demLayer.clearLayers(); lineLayer.clearLayers();
-  const dem = getDemand(), msg = $('msg');
-  const pin = (lat, lon, label, on) => L.marker([lat, lon], {icon: L.divIcon({className: '', iconSize: [0, 0], html: '<div class="pj ' + (on ? 'on' : 'off') + '"><div class="pj-pin"><span>★</span></div><div class="pj-tag">' + label + '</div></div>'}), zIndexOffset: on ? 2000 : 1000}).addTo(demLayer);
-  D.projects.forEach(p => pin(p.lat, p.lon, p.name.replace(/ \(approx\. location\)/, ''), dem && dem.id === p.id).on('click', () => { $('demand').value = p.id; update(); }));
-  if (!dem) { msg.className = ''; msg.textContent = 'Click the map to place a custom demand point.'; ['cov', 'nf', 'capsel', 'maxd'].forEach(i => $(i).textContent = '–'); $('cmp').innerHTML = ''; return; }
-  if (!dem.id) pin(dem.lat, dem.lon, 'Custom demand point', true);
+  const dem = getDemand(), msg = $('msg'), show = ran ? '' : 'none';
+  $('stats').style.display = show; $('cmpwrap').style.display = show;
+  const pin = (lat, lon, label, on) => L.marker([lat, lon], {icon: L.divIcon({className: '', iconSize: [0, 0], html: '<div class="pj ' + (on ? 'on' : 'off') + '"><div class="pj-dot"></div><div class="pj-pin"></div><div class="pj-tag">' + label + '</div></div>'}), zIndexOffset: on ? 2000 : 1000}).addTo(demLayer);
+  D.projects.forEach(p => pin(p.lat, p.lon, shortName(p), dem && dem.id === p.id).on('click', () => { $('demand').value = p.id; reset(); }));
+  if (!dem) { msg.className = ''; msg.textContent = 'Click anywhere on the map to place your project.'; $('go').disabled = true; return; }
+  if (!dem.id) pin(dem.lat, dem.lon, 'Your project', true);
 
   const cfg = {demand: dem, svc: $('svc').value, units: +$('units').value || 1, radius: +$('radius').value, maxf: +$('maxf').value, t3: $('t3').checked};
   const r = evaluate(cfg, PROFILES[$('profile').value]);
+  const k = key(dem), waiting = !store.t[k] && !failed[k];
+  $('go').disabled = waiting; $('go').textContent = waiting ? 'Loading road distances…' : (ran ? 'Show again' : 'Find local suppliers');
 
   r.cand.forEach(c => {
-    const inPool = r.pool.includes(c), sel = r.picked.includes(c);
-    L.circleMarker([c.s.lat, c.s.lon], {radius: 5 + Math.sqrt(c.cap) / 10, fillColor: COL[c.tier], color: sel ? '#000' : '#2c3e50', weight: sel ? 3 : 1, fillOpacity: inPool ? .9 : .25, opacity: inPool ? 1 : .4, bubblingMouseEvents: false})
-      .bindPopup('<b>' + c.s.name + '</b><br>Tier ' + c.tier + ' (net flow ' + c.phi.toFixed(2) + ')<br>Capacity: ' + c.cap + ' units/yr<br>Lead time: ' + c.lead + ' d<br>Traceability: ' + c.trace + '<br>Distance: ' + c.dist.toFixed(0) + ' km' + (roadStatus === 'ok' ? ' (road)' : ' (estimate)') + (sel ? '<br><b>Selected</b>' : inPool ? '' : '<br><i>Outside buffer or Tier 3</i>')).addTo(smeLayer);
-    if (sel) drawRoute(dem, c.s, my);
+    const sel = ran && r.picked.includes(c), dim = ran && !r.pool.includes(c);
+    L.circleMarker([c.s.lat, c.s.lon], {radius: 5 + Math.sqrt(c.cap) / 10, fillColor: COL[c.tier], color: sel ? '#000' : '#2c3e50', weight: sel ? 3 : 1, fillOpacity: dim ? .25 : .9, opacity: dim ? .4 : 1, bubblingMouseEvents: false})
+      .bindPopup('<b>' + c.s.name + '</b><br>Readiness: ' + TIERS[c.tier] + '<br>Capacity: ' + c.cap.toLocaleString() + ' units per year<br>Delivery time: ' + c.lead + ' days<br>Tracking and records: ' + Math.round(c.trace * 100) + '%<br>Distance: ' + c.dist.toFixed(0) + ' km by road' + (roadStatus === 'ok' ? '' : ' (rough)') + (sel ? '<br><b>Chosen for this project</b>' : '')).addTo(smeLayer);
   });
+  if (!ran) { msg.className = ''; msg.textContent = 'Choose your settings, then press "Find local suppliers".'; return; }
 
-  setNote();
+  r.picked.forEach((c, i) => setTimeout(() => { if (my === tick) drawRoute(dem, c.s, my); }, i * 700));   // routes appear one by one
   $('cov').textContent = Math.round(r.cov * 100) + '%';
-  $('nf').textContent = r.picked.length + ' / ' + cfg.maxf;
+  $('nf').textContent = r.picked.length + ' of ' + cfg.maxf;
   $('capsel').textContent = r.got.toLocaleString();
   $('maxd').textContent = r.picked.length ? r.maxd.toFixed(0) : '–';
-  if (r.cov >= 1) { msg.className = ''; msg.textContent = 'Demand met by ' + r.picked.length + ' firm(s); average lead time ' + r.lead.toFixed(0) + ' days (capacity-weighted).'; }
-  else { msg.className = 'warn'; msg.textContent = 'Demand not met (' + Math.round(r.cov * 100) + '%). ' + (r.picked.length >= cfg.maxf ? 'The firm limit is binding: raise it.' : 'Not enough qualified capacity in the buffer: widen it or include Tier 3 firms.'); }
+  const n = r.picked.length;
+  if (r.cov >= 1) { msg.className = ''; msg.textContent = (n === 1 ? '1 firm can' : n + ' firms together can') + ' supply the full amount. Average delivery time: ' + r.lead.toFixed(0) + ' days.'; }
+  else { msg.className = 'warn'; msg.textContent = 'Only ' + Math.round(r.cov * 100) + '% of the need can be supplied locally. ' + (n >= cfg.maxf ? 'Allow more firms to get closer.' : 'Try a longer driving distance, or include firms that need a lot of support.'); }
 
-  $('cmp').innerHTML = '<tr><th>Profile</th><th>Covered</th><th>Firms</th><th>Max km</th></tr>' + Object.keys(PROFILES).map(k => {
-    const q = evaluate(cfg, PROFILES[k]);
-    return '<tr class="' + (k === $('profile').value ? 'cur' : '') + '"><td>' + PROFILES[k].name + '</td><td>' + Math.round(q.cov * 100) + '%</td><td>' + q.picked.length + '</td><td>' + (q.picked.length ? q.maxd.toFixed(0) : '–') + '</td></tr>';
+  $('cmp').innerHTML = '<tr><th>Buyer priority</th><th>Covered</th><th>Firms</th><th>Farthest km</th></tr>' + Object.keys(PROFILES).map(p => {
+    const x = evaluate(cfg, PROFILES[p]);
+    return '<tr class="' + (p === $('profile').value ? 'cur' : '') + '"><td>' + PROFILES[p].name + '</td><td>' + Math.round(x.cov * 100) + '%</td><td>' + x.picked.length + '</td><td>' + (x.picked.length ? x.maxd.toFixed(0) : '–') + '</td></tr>';
   }).join('');
 }
-['demand', 'svc', 'units', 'profile', 'radius', 'maxf', 't3'].forEach(id => $(id).addEventListener('input', update));
 
 const legend = L.control({position: 'bottomright'});
-legend.onAdd = () => { const d = L.DomUtil.create('div', 'legend'); d.innerHTML = '<b>Readiness (PROMETHEE II)</b><br><i style="background:#2ecc71"></i>Tier 1<br><i style="background:#f39c12"></i>Tier 2<br><i style="background:#e74c3c"></i>Tier 3<br>Black ring = selected<br>Faded = outside buffer'; return d; };
+legend.onAdd = () => { const d = L.DomUtil.create('div', 'legend'); d.innerHTML = '<b>How ready are the firms?</b><br><i style="background:#2ecc71"></i>Ready<br><i style="background:#f39c12"></i>Needs some support<br><i style="background:#e74c3c"></i>Needs a lot of support<br>Black ring: chosen for this project<br>Faded: too far away or left out'; return d; };
 legend.addTo(map);
 update();
 </script>
