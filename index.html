@@ -40,11 +40,12 @@ tr.cur td{color:#f1c40f;font-weight:600}
 .pj-pin{position:absolute;left:-17px;top:-41px;width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#c0392b;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.55)}
 .pj-pin::after{content:'';position:absolute;left:50%;top:50%;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;background:#fff}
 .pj-tag{position:absolute;left:24px;top:-38px;white-space:nowrap;background:#c0392b;color:#fff;padding:3px 9px;border-radius:4px;font:600 12px 'Segoe UI',Tahoma,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,.4)}
-.pj.on::before{content:'';position:absolute;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;border:3px solid #c0392b;animation:pulse 1.6s ease-out infinite}
+.pj.on::before,.pj.on::after{content:'';position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(192,57,43,.75);background:rgba(192,57,43,.07);opacity:0;animation:pulse 2.8s ease-out infinite}
+.pj.on::after{animation-delay:1.4s}
 .pj.off .pj-pin{background:#7f8c8d;transform:rotate(-45deg) scale(.8);transform-origin:50% 100%}
 .pj.off .pj-dot{background:#7f8c8d}
 .pj.off .pj-tag{background:#7f8c8d;font-size:11px;opacity:.85}
-@keyframes pulse{0%{transform:scale(.6);opacity:1}100%{transform:scale(2);opacity:0}}
+@keyframes pulse{0%{transform:scale(.6);opacity:.9}60%{opacity:.25}100%{transform:scale(2.2);opacity:0}}
 @media(max-width:800px){body{flex-direction:column;height:auto}#map{height:55vh;flex:none}#side{max-width:none}}
 </style>
 </head>
