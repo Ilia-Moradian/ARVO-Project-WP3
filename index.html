@@ -92,28 +92,40 @@ function getDemand() {
   if (v === 'custom') return custom;
   return D.projects.find(p => p.id === v);
 }
-// Road distances and routes come live from the public OSRM demo server (OpenStreetMap data); results are cached in the browser.
-const OSRM = 'https://router.project-osrm.org';
-let store = {t: {}, r: {}}, roadStatus = 'pending', tick = 0, q = Promise.resolve();
+// Road distances and routes: OpenRouteService first (key in data.js), public OSRM demo server as fallback. Results are cached in the browser.
+const ORS = 'https://api.heigit.org/openrouteservice/v2', OSRM = 'https://router.project-osrm.org';
+let store = {t: {}, r: {}}, roadStatus = 'pending', roadSrc = '', tick = 0, q = Promise.resolve();
 const inflight = {}, pend = {};
-try { store = JSON.parse(localStorage.getItem('arvo-osrm-v1')) || store; } catch (e) {}
-const save = () => { try { localStorage.setItem('arvo-osrm-v1', JSON.stringify(store)); } catch (e) {} };
+try { store = JSON.parse(localStorage.getItem('arvo-road-v2')) || store; } catch (e) {}
+const save = () => { try { localStorage.setItem('arvo-road-v2', JSON.stringify(store)); } catch (e) {} };
 const key = d => d.lat.toFixed(4) + ',' + d.lon.toFixed(4);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const orsPost = (path, body) => fetch(ORS + path, {method: 'POST', headers: {'Authorization': D.orsKey, 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+  .then(r => { if (!r.ok) throw new Error('ORS ' + r.status); return r.json(); });
 
 async function fetchTable(dem) {
-  const co = [[dem.lon, dem.lat]].concat(D.smes.map(s => [s.lon, s.lat])).map(c => c.join(',')).join(';');
-  const r = await fetch(OSRM + '/table/v1/driving/' + co + '?sources=0&destinations=' + D.smes.map((_, i) => i + 1).join(';') + '&annotations=distance');
-  const j = await r.json();
-  if (j.code !== 'Ok') throw new Error(j.code);
-  const m = {}; D.smes.forEach((s, i) => { const v = j.distances[0][i]; if (v != null) m[s.id] = v / 1000; });
-  return m;
+  const pts = [[dem.lon, dem.lat]].concat(D.smes.map(s => [s.lon, s.lat]));
+  const dst = D.smes.map((_, i) => i + 1);
+  let dist, src;
+  if (D.orsKey) {
+    try { const j = await orsPost('/matrix/driving-car', {locations: pts, sources: [0], destinations: dst, metrics: ['distance'], units: 'km'}); dist = j.distances[0]; src = 'OpenRouteService'; }
+    catch (e) { console.warn(e); }
+  }
+  if (!dist) {
+    const r = await fetch(OSRM + '/table/v1/driving/' + pts.map(c => c.join(',')).join(';') + '?sources=0&destinations=' + dst.join(';') + '&annotations=distance');
+    const j = await r.json();
+    if (j.code !== 'Ok') throw new Error(j.code);
+    dist = j.distances[0].map(v => v == null ? null : v / 1000); src = 'OSRM';
+  }
+  const m = {}; D.smes.forEach((s, i) => { if (dist[i] != null) m[s.id] = dist[i]; });
+  return {m, src};
 }
 function roadDist(dem) {
-  const k = key(dem);
-  if (store.t[k]) { roadStatus = 'ok'; return store.t[k]; }
+  const k = key(dem), c = store.t[k];
+  if (c) { roadStatus = 'ok'; roadSrc = c.src; return c.m; }
   if (!inflight[k]) {
     inflight[k] = true;
-    fetchTable(dem).then(m => { store.t[k] = m; roadStatus = 'ok'; save(); update(); }).catch(() => { roadStatus = 'fail'; update(); });
+    fetchTable(dem).then(c => { store.t[k] = c; roadStatus = 'ok'; roadSrc = c.src; save(); update(); }).catch(() => { roadStatus = 'fail'; update(); });
   }
   return null;
 }
@@ -121,10 +133,22 @@ function distTo(dem, s) {
   const t = roadDist(dem);
   return (t && t[s.id] != null) ? t[s.id] : hav(dem.lat, dem.lon, s.lat, s.lon) * D.detour;
 }
+async function fetchRoute(dem, s) {
+  if (D.orsKey) {
+    try {
+      await wait(1000);   // stay under the free quota of 40 requests/minute
+      const j = await orsPost('/directions/driving-car/geojson', {coordinates: [[dem.lon, dem.lat], [s.lon, s.lat]], instructions: false, geometry_simplify: true});
+      return j.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+    } catch (e) { console.warn(e); }
+  }
+  await wait(1100);       // public OSRM server: max 1 request/second
+  const r = await fetch(OSRM + '/route/v1/driving/' + dem.lon + ',' + dem.lat + ';' + s.lon + ',' + s.lat + '?overview=simplified&geometries=geojson');
+  const j = await r.json();
+  return j.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+}
 function getRoute(dem, s, k) {
   if (pend[k]) return pend[k];
-  const p = q.catch(() => {}).then(() => fetch(OSRM + '/route/v1/driving/' + dem.lon + ',' + dem.lat + ';' + s.lon + ',' + s.lat + '?overview=simplified&geometries=geojson'))
-    .then(r => r.json()).then(j => { const pts = j.routes[0].geometry.coordinates.map(c => [c[1], c[0]]); store.r[k] = pts; save(); return pts; });
+  const p = q.catch(() => {}).then(() => fetchRoute(dem, s)).then(pts => { store.r[k] = pts; save(); return pts; });
   q = p; p.catch(() => { delete pend[k]; });
   return pend[k] = p;
 }
@@ -135,7 +159,7 @@ function drawRoute(dem, s, my) {
   getRoute(dem, s, k).then(pts => line(pts)).catch(() => line([[dem.lat, dem.lon], [s.lat, s.lon]], '5,5'));
 }
 function setNote() {
-  $('srcnote').innerHTML = (roadStatus === 'ok' ? 'Road distances and routes: OSRM / OpenStreetMap. ' : roadStatus === 'fail' ? 'Road service unreachable: showing estimates (straight line × ' + D.detour + ', dashed lines). ' : 'Loading road distances… ') + 'Firm data is sample data.';
+  $('srcnote').innerHTML = (roadStatus === 'ok' ? 'Road distances and routes: ' + roadSrc + ' (OpenStreetMap data). ' : roadStatus === 'fail' ? 'Road service unreachable: showing estimates (straight line × ' + D.detour + ', dashed lines). ' : 'Loading road distances… ') + 'Firm data is sample data.';
 }
 
 // Stage 1: PROMETHEE II net flow per firm. Stage 2: buffer, rank by net flow, pick until demand or firm limit.
