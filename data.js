@@ -1,11 +1,11 @@
 window.DATA = {
  "detour": 1.3,
  // Paste your OpenRouteService key between the quotes. Leave empty to use only the public OSRM server.
- "orsKey": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImVlNzEzNmM5NDdlYTQ4MGE5ZTgyOGY2YTBhYjEzODNjIiwiaCI6Im11cm11cjY0In0=",
+ "orsKey": "",
  "projects": [{"id": "oulu-h2", "name": "Hydrogen project, Oulu (approx. location)", "lat": 65.0121, "lon": 25.4651}, {"id": "nivala-wind", "name": "Wind + battery project, Nivala (approx. location)", "lat": 63.9292, "lon": 24.9616}],
  "smes": [
-  {"id": "s01", "name": "Oulu Fab Oy", "lat": 65.0121, "lon": 25.4651, "lead": 15, "trace": 0.8, "cap": {"metal": 2200, "electrical": 0, "logistics": 0, "civil": 400}},
-  {"id": "s02", "name": "Oulu Green Logistics", "lat": 65.03, "lon": 25.4, "lead": 14, "trace": 0.9, "cap": {"metal": 0, "electrical": 0, "logistics": 3500, "civil": 0}},
+  {"id": "s01", "name": "Oulu Fab Oy", "lat": 64.93, "lon": 25.35, "lead": 15, "trace": 0.8, "cap": {"metal": 2200, "electrical": 0, "logistics": 0, "civil": 400}},
+  {"id": "s02", "name": "Oulu Green Logistics", "lat": 65.18, "lon": 25.36, "lead": 14, "trace": 0.9, "cap": {"metal": 0, "electrical": 0, "logistics": 3500, "civil": 0}},
   {"id": "s03", "name": "Kempele Electrical", "lat": 64.91, "lon": 25.51, "lead": 20, "trace": 0.7, "cap": {"metal": 0, "electrical": 1800, "logistics": 0, "civil": 0}},
   {"id": "s04", "name": "Ii Metalworks", "lat": 65.32, "lon": 25.37, "lead": 28, "trace": 0.4, "cap": {"metal": 1100, "electrical": 0, "logistics": 0, "civil": 0}},
   {"id": "s05", "name": "Liminka Components", "lat": 64.81, "lon": 25.42, "lead": 24, "trace": 0.5, "cap": {"metal": 600, "electrical": 1200, "logistics": 0, "civil": 0}},
@@ -23,7 +23,7 @@ window.DATA = {
   {"id": "s17", "name": "Alavieska Precision", "lat": 64.17, "lon": 24.3, "lead": 27, "trace": 0.5, "cap": {"metal": 1400, "electrical": 0, "logistics": 0, "civil": 0}},
   {"id": "s18", "name": "Ylivieska Cables Oy", "lat": 64.07, "lon": 24.53, "lead": 16, "trace": 0.8, "cap": {"metal": 0, "electrical": 4500, "logistics": 0, "civil": 0}},
   {"id": "s19", "name": "Haapavesi Civil Works", "lat": 64.14, "lon": 25.37, "lead": 30, "trace": 0.4, "cap": {"metal": 0, "electrical": 0, "logistics": 0, "civil": 1500}},
-  {"id": "s20", "name": "Nivala WindTech", "lat": 63.93, "lon": 24.96, "lead": 12, "trace": 0.9, "cap": {"metal": 1800, "electrical": 2500, "logistics": 0, "civil": 2000}},
+  {"id": "s20", "name": "Nivala WindTech", "lat": 63.85, "lon": 25.02, "lead": 12, "trace": 0.9, "cap": {"metal": 1800, "electrical": 2500, "logistics": 0, "civil": 2000}},
   {"id": "s21", "name": "Sievi Fabrication", "lat": 63.91, "lon": 24.52, "lead": 40, "trace": 0.3, "cap": {"metal": 900, "electrical": 0, "logistics": 0, "civil": 0}},
   {"id": "s22", "name": "Kärsämäki Contractors", "lat": 63.97, "lon": 25.76, "lead": 36, "trace": 0.3, "cap": {"metal": 600, "electrical": 0, "logistics": 0, "civil": 1100}},
   {"id": "s23", "name": "Pyhäntä Haulage", "lat": 64.1, "lon": 26.32, "lead": 38, "trace": 0.3, "cap": {"metal": 0, "electrical": 0, "logistics": 1000, "civil": 0}},
