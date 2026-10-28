@@ -31,6 +31,8 @@ th,td{padding:5px 4px;text-align:left;border-bottom:1px solid #3d566e}
 tr.cur td{color:#f1c40f;font-weight:600}
 .legend{background:#fff;color:#333;padding:10px;border-radius:6px;line-height:1.7;box-shadow:0 0 12px rgba(0,0,0,.25);font-size:.8rem}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px}
+.src{margin-top:18px;padding-top:10px;border-top:1px solid #3d566e;font-size:.74rem;color:#8fa3b5;line-height:1.6}
+.filebtn{color:#8fd9f2;cursor:pointer;text-decoration:underline;margin-left:8px}
 /* KSI logo above the zoom buttons */
 .logo{background:#fff;padding:6px 10px;border-radius:6px;box-shadow:0 1px 8px rgba(0,0,0,.35)}
 .logo img{display:block;height:55px;width:auto;max-width:288px}
@@ -58,12 +60,7 @@ tr.cur td{color:#f1c40f;font-weight:600}
   <label for="demand">Investment project location</label>
   <select id="demand"></select>
   <label for="svc">Supply category required</label>
-  <select id="svc">
-    <option value="metal">Metal fabrication and welding</option>
-    <option value="electrical">Electrical and hydrogen equipment</option>
-    <option value="logistics">Logistics and transport</option>
-    <option value="civil">Site services and civil works</option>
-  </select>
+  <select id="svc"></select>
   <label for="units">Project demand (units per year)</label>
   <input type="number" id="units" value="9000" step="500" min="500">
   <label for="profile">Buyer's procurement priority</label>
@@ -86,13 +83,16 @@ tr.cur td{color:#f1c40f;font-weight:600}
     <h3>Sensitivity to the buyer's priority</h3>
     <table id="cmp"></table>
   </div>
+  <div class="src"><span id="srcfile"></span><label class="filebtn">Load Excel file<input type="file" id="xl" accept=".xlsx,.xls,.csv" hidden></label></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="data.js"></script>
 <script>
 if (!window.DATA) { document.body.innerHTML = '<p style="color:#333;padding:20px">data.js not found next to index.html.</p>'; throw new Error('no data'); }
 const D = window.DATA, $ = id => document.getElementById(id);
+D.cats = D.cats || [{key: 'metal', label: 'Metal fabrication and welding'}, {key: 'electrical', label: 'Electrical and hydrogen equipment'}, {key: 'logistics', label: 'Logistics and transport'}, {key: 'civil', label: 'Site services and civil works'}];
 const T1 = 0.15, T2 = -0.15;                       // readiness cut-offs
 const COL = {1: '#2ecc71', 2: '#f39c12', 3: '#e74c3c'};
 const TIERS = {1: 'Tier 1 (Ready)', 2: 'Tier 2 (Needs targeted support)', 3: 'Tier 3 (Major capability gaps)'};
@@ -118,9 +118,12 @@ function getDemand() {
 const ORS = 'https://api.heigit.org/openrouteservice/v2', OSRM = 'https://router.project-osrm.org';
 let store = {t: {}, r: {}}, roadStatus = 'pending', roadSrc = '', tick = 0, q = Promise.resolve();
 const inflight = {}, pend = {}, failed = {};
-try { store = JSON.parse(localStorage.getItem('arvo-road-v3')) || store; } catch (e) {}
-const save = () => { try { localStorage.setItem('arvo-road-v3', JSON.stringify(store)); } catch (e) {} };
+try { store = JSON.parse(localStorage.getItem('arvo-road-v4')) || store; } catch (e) {}
+const save = () => { try { localStorage.setItem('arvo-road-v4', JSON.stringify(store)); } catch (e) {} };
 const key = d => d.lat.toFixed(4) + ',' + d.lon.toFixed(4);
+let sig = '';   // fingerprint of the firm list: cached distances are only reused for the same firms
+const tkey = d => key(d) + '#' + sig;
+const setSig = () => { let x = 5381; const s = D.smes.map(m => m.id + ':' + m.lat + ',' + m.lon).join(';'); for (let i = 0; i < s.length; i++) x = ((x << 5) + x + s.charCodeAt(i)) | 0; sig = (x >>> 0).toString(36); };
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const orsPost = (path, body) => fetch(ORS + path, {method: 'POST', headers: {'Authorization': D.orsKey, 'Content-Type': 'application/json'}, body: JSON.stringify(body)})
   .then(async r => {
@@ -146,7 +149,7 @@ async function fetchTable(dem) {
   return {m, src};
 }
 function roadDist(dem) {
-  const k = key(dem), c = store.t[k];
+  const k = tkey(dem), c = store.t[k];
   if (c) { roadStatus = 'ok'; roadSrc = c.src; return c.m; }
   if (!inflight[k]) {
     inflight[k] = true;
@@ -178,7 +181,7 @@ function getRoute(dem, s, k) {
   return pend[k] = p;
 }
 function drawRoute(dem, s, my) {
-  const k = key(dem) + '>' + s.id;
+  const k = key(dem) + '>' + key(s);
   const line = (pts, dash) => { if (my === tick) L.polyline(pts, {color: '#3498db', weight: 4, opacity: .65, dashArray: dash}).addTo(lineLayer); };
   if (store.r[k]) return line(store.r[k]);
   getRoute(dem, s, k).then(pts => line(pts)).catch(() => line([[dem.lat, dem.lon], [s.lat, s.lon]], '5,5'));
@@ -217,8 +220,15 @@ L.control.zoom({position: 'topleft'}).addTo(map);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 18, attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
 const smeLayer = L.layerGroup().addTo(map), demLayer = L.layerGroup().addTo(map), lineLayer = L.layerGroup().addTo(map);
 
-D.projects.forEach(p => $('demand').add(new Option(shortName(p), p.id)));
-$('demand').add(new Option('Custom location (click on the map)', 'custom'));
+function buildSelects() {
+  const dv = $('demand').value, sv = $('svc').value;
+  $('demand').innerHTML = ''; $('svc').innerHTML = '';
+  D.projects.forEach(p => $('demand').add(new Option(shortName(p), p.id)));
+  $('demand').add(new Option('Custom location (click on the map)', 'custom'));
+  D.cats.forEach(c => $('svc').add(new Option(c.label, c.key)));
+  if ([...$('demand').options].some(o => o.value === dv)) $('demand').value = dv;
+  if ([...$('svc').options].some(o => o.value === sv)) $('svc').value = sv;
+}
 Object.keys(PROFILES).forEach(k => $('profile').add(new Option(PROFILES[k].name, k)));
 
 const reset = () => { ran = false; update(); };
@@ -239,7 +249,7 @@ function update() {
 
   const cfg = {demand: dem, svc: $('svc').value, units: +$('units').value || 1, radius: +$('radius').value, maxf: +$('maxf').value, t3: $('t3').checked};
   const r = evaluate(cfg, PROFILES[$('profile').value]);
-  const k = key(dem), waiting = !store.t[k] && !failed[k];
+  const k = tkey(dem), waiting = !store.t[k] && !failed[k];
   $('go').disabled = waiting; $('go').textContent = waiting ? 'Loading road distances…' : (ran ? 'Run again' : 'Aggregate local capacity');
 
   r.cand.forEach(c => {
@@ -267,7 +277,82 @@ function update() {
 const legend = L.control({position: 'bottomright'});
 legend.onAdd = () => { const d = L.DomUtil.create('div', 'legend'); d.innerHTML = '<b>Supplier readiness</b><br><i style="background:#2ecc71"></i>Tier 1: Ready<br><i style="background:#f39c12"></i>Tier 2: Needs targeted support<br><i style="background:#e74c3c"></i>Tier 3: Major capability gaps<br>Black ring: selected for this project<br>Faded: outside the distance limit or excluded'; return d; };
 legend.addTo(map);
-update();
+
+// ---- Excel data (optional): data.xlsx next to this page, or the "Load Excel file" link ----
+const val = x => x == null ? '' : String(x).trim();
+const norm = s => val(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+const num = x => { if (typeof x === 'number') return x; const v = parseFloat(val(x).replace(',', '.')); return isNaN(v) ? null : v; };
+const firstRow = rows => rows.findIndex(r => r.some(c => val(c) !== ''));
+function findCols(head) {
+  const h = head.map(norm), at = f => h.findIndex(f);
+  return {name: at(x => x.includes('name') || x.includes('firm') || x.includes('company')), lat: at(x => x.startsWith('lat')), lon: at(x => x.startsWith('lon') || x.startsWith('lng')),
+    lead: at(x => x.includes('lead')), trace: at(x => x.includes('trace')), caps: head.map((t, i) => /^\s*capacity/i.test(val(t)) ? i : -1).filter(i => i >= 0)};
+}
+function parseSmes(rows) {
+  const hi = firstRow(rows);
+  if (hi < 0) return {error: 'the SMEs sheet is empty'};
+  const c = findCols(rows[hi]), miss = [];
+  if (c.name < 0) miss.push('Firm name');
+  if (c.lat < 0) miss.push('Latitude');
+  if (c.lon < 0) miss.push('Longitude');
+  if (c.lead < 0) miss.push('Lead time');
+  if (c.trace < 0) miss.push('Traceability');
+  if (!c.caps.length) miss.push('a "Capacity: …" column');
+  if (miss.length) return {error: 'the SMEs sheet is missing ' + miss.join(', ')};
+  const cats = c.caps.map((i, n) => ({key: 'c' + n, label: val(rows[hi][i]).replace(/^\s*capacity\s*[:\-–]?\s*/i, '') || 'Category ' + (n + 1)}));
+  const smes = []; let skipped = 0;
+  rows.slice(hi + 1).forEach(r => {
+    if (r.every(x => val(x) === '')) return;
+    const lat = num(r[c.lat]), lon = num(r[c.lon]), lead = num(r[c.lead]);
+    if (!val(r[c.name]) || lat == null || lon == null || lead == null) { skipped++; return; }
+    let tr = num(r[c.trace]); tr = tr == null ? 0 : (tr > 1 ? tr / 100 : tr);
+    const cap = {}; cats.forEach((ct, n) => { cap[ct.key] = Math.max(0, num(r[c.caps[n]]) || 0); });
+    smes.push({id: 's' + String(smes.length + 1).padStart(2, '0'), name: val(r[c.name]), lat, lon, lead, trace: tr, cap});
+  });
+  return {smes, cats, skipped};
+}
+function parseProjects(rows) {
+  const hi = firstRow(rows);
+  if (hi < 0) return {projects: []};
+  const c = findCols(rows[hi]);
+  if (c.name < 0 || c.lat < 0 || c.lon < 0) return {error: 'the Projects sheet needs Project name, Latitude and Longitude'};
+  const projects = [];
+  rows.slice(hi + 1).forEach(r => { const lat = num(r[c.lat]), lon = num(r[c.lon]), nm = val(r[c.name]); if (nm && lat != null && lon != null) projects.push({id: 'p' + (projects.length + 1), name: nm, lat, lon}); });
+  return {projects};
+}
+function applyWorkbook(wb, label) {
+  const pick = f => wb.SheetNames.find(n => f(norm(n)));
+  const sn = pick(n => n.includes('sme') || n.includes('firm') || n.includes('compan')) || wb.SheetNames[0], pn = pick(n => n.includes('project'));
+  const rows = n => XLSX.utils.sheet_to_json(wb.Sheets[n], {header: 1, defval: ''});
+  const fail = m => { $('srcfile').textContent = 'Could not use ' + label + ': ' + m + '.'; return false; };
+  const s = parseSmes(rows(sn));
+  if (s.error) return fail(s.error);
+  if (!s.smes.length) return fail('no valid firm rows (check Latitude, Longitude and Lead time)');
+  let projects = null;
+  if (pn) { const p = parseProjects(rows(pn)); if (p.error) return fail(p.error); if (p.projects.length) projects = p.projects; }
+  D.smes = s.smes; D.cats = s.cats; if (projects) D.projects = projects;
+  setSig(); buildSelects();
+  const pts = D.smes.concat(D.projects).map(x => [x.lat, x.lon]);
+  if (!map.getBounds().contains(L.latLngBounds(pts))) map.fitBounds(pts, {padding: [50, 50]});
+  $('srcfile').textContent = 'Data: ' + label + ' · ' + D.smes.length + ' firms, ' + D.projects.length + ' projects' + (s.skipped ? ' · ' + s.skipped + ' incomplete rows skipped' : '');
+  return true;
+}
+async function init() {
+  setSig(); buildSelects();
+  if (window.XLSX && location.protocol.startsWith('http')) {
+    try { const r = await fetch('data.xlsx', {cache: 'no-store'}); if (r.ok) applyWorkbook(XLSX.read(await r.arrayBuffer(), {type: 'array'}), 'data.xlsx'); } catch (e) { console.warn(e); }
+  }
+  if (!$('srcfile').textContent) $('srcfile').textContent = 'Data: built-in sample';
+  update();
+}
+$('xl').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  if (!window.XLSX) { $('srcfile').textContent = 'The Excel reader could not be loaded (no internet?).'; return; }
+  try { if (applyWorkbook(XLSX.read(await f.arrayBuffer(), {type: 'array'}), f.name)) reset(); }
+  catch (x) { console.warn(x); $('srcfile').textContent = 'Could not read ' + f.name + '.'; }
+});
+init();
 </script>
 </body>
 </html>
