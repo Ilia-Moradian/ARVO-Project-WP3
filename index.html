@@ -116,8 +116,8 @@ function getDemand() {
 const ORS = 'https://api.heigit.org/openrouteservice/v2', OSRM = 'https://router.project-osrm.org';
 let store = {t: {}, r: {}}, roadStatus = 'pending', roadSrc = '', tick = 0, q = Promise.resolve();
 const inflight = {}, pend = {}, failed = {};
-try { store = JSON.parse(localStorage.getItem('arvo-road-v4')) || store; } catch (e) {}
-const save = () => { try { localStorage.setItem('arvo-road-v4', JSON.stringify(store)); } catch (e) {} };
+try { store = JSON.parse(localStorage.getItem('arvo-road-v5')) || store; } catch (e) {}
+const save = () => { try { localStorage.setItem('arvo-road-v5', JSON.stringify(store)); } catch (e) {} };
 const key = d => d.lat.toFixed(4) + ',' + d.lon.toFixed(4);
 let sig = '';   // fingerprint of the firm list: cached distances are only reused for the same firms
 const tkey = d => key(d) + '#' + sig;
@@ -148,12 +148,12 @@ async function fetchTable(dem) {
 }
 function roadDist(dem) {
   const k = tkey(dem), c = store.t[k];
-  if (c) { roadStatus = 'ok'; roadSrc = c.src; return c.m; }
+  if (c && (!D.orsKey || c.src === 'OpenRouteService' || inflight[k])) { roadStatus = 'ok'; roadSrc = c.src; return c.m; }   // a result cached from OSRM is refreshed once when an ORS key is present
   if (!inflight[k]) {
     inflight[k] = true;
     fetchTable(dem).then(c => { store.t[k] = c; roadStatus = 'ok'; roadSrc = c.src; save(); update(); }).catch(() => { roadStatus = 'fail'; failed[k] = true; update(); });
   }
-  return null;
+  return c ? c.m : null;   // meanwhile an older cached result is used
 }
 function distTo(dem, s) {
   const t = roadDist(dem);
@@ -164,24 +164,25 @@ async function fetchRoute(dem, s) {
     try {
       await wait(1000);   // stay under the free quota of 40 requests/minute
       const j = await orsPost('/directions/driving-car/geojson', {coordinates: [[dem.lon, dem.lat], [s.lon, s.lat]], radiuses: [-1, -1], instructions: false, geometry_simplify: true});
-      return j.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+      return {pts: j.features[0].geometry.coordinates.map(c => [c[1], c[0]]), src: 'OpenRouteService'};
     } catch (e) { console.warn(e); }
   }
   await wait(1100);       // public OSRM server: max 1 request/second
   const r = await fetch(OSRM + '/route/v1/driving/' + dem.lon + ',' + dem.lat + ';' + s.lon + ',' + s.lat + '?overview=simplified&geometries=geojson');
   const j = await r.json();
-  return j.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+  return {pts: j.routes[0].geometry.coordinates.map(c => [c[1], c[0]]), src: 'OSRM'};
 }
 function getRoute(dem, s, k) {
   if (pend[k]) return pend[k];
-  const p = q.catch(() => {}).then(() => fetchRoute(dem, s)).then(pts => { store.r[k] = pts; save(); return pts; });
+  const p = q.catch(() => {}).then(() => fetchRoute(dem, s)).then(res => { store.r[k] = res; save(); return res.pts; });
   q = p; p.catch(() => { delete pend[k]; });
   return pend[k] = p;
 }
 function drawRoute(dem, s, my) {
   const k = key(dem) + '>' + key(s);
   const line = (pts, dash) => { if (my === tick) L.polyline(pts, {color: '#3498db', weight: 4, opacity: .65, dashArray: dash}).addTo(lineLayer); };
-  if (store.r[k]) return line(store.r[k]);
+  const e = store.r[k];
+  if (e && (!D.orsKey || e.src === 'OpenRouteService' || pend[k])) return line(e.pts);
   getRoute(dem, s, k).then(pts => line(pts)).catch(() => line([[dem.lat, dem.lon], [s.lat, s.lon]], '5,5'));
 }
 function setNote() {
