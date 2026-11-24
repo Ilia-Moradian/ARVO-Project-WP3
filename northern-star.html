@@ -3,228 +3,246 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Northern Star – concept mock-up</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Sans+3:wght@400;600&display=swap">
+<title>Northern Star | ARVO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap">
 <style>
-:root{--night:#0b1a29;--deep:#12384a;--aurora:#3ddc97;--ice:#8fd9f2;--star:#f2b84b;--paper:#f5f2ea;--ink:#14212e;--mut:#5a6a79;--line:#d9d4c7}
+:root{
+  --ink:#14222f; --mut:#5b6b78; --line:#e3e7ea; --soft:#f4f6f7;
+  --accent:#0e6f8f; --accent-dk:#0a5670; --star:#e8a838;
+}
 *{box-sizing:border-box}
-body{margin:0;font:400 16px/1.55 'Source Sans 3','Segoe UI',Tahoma,sans-serif;color:var(--ink);background:#fff}
-h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:600;margin:0;line-height:1.15}
-.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
-.ribbon{background:var(--star);color:#3a2a00;text-align:center;font-size:.82rem;font-weight:600;padding:6px 12px}
-.top{background:var(--night);color:#fff}
-.top .wrap{display:flex;align-items:center;justify-content:space-between;height:70px;gap:24px}
-.brand{display:flex;align-items:center;gap:11px;color:#fff;text-decoration:none}
-.brand b{font:600 1.4rem Fraunces,Georgia,serif;display:block;line-height:1}
-.brand small{display:block;font-size:.72rem;color:#9bb2c4;margin-top:4px}
-nav a{color:#c9d8e4;text-decoration:none;font-size:.92rem;margin-left:22px}
-nav a:hover{color:#fff}
-.hero{position:relative;overflow:hidden;color:#fff;padding:76px 0 66px;background:radial-gradient(900px 380px at 80% 15%,rgba(61,220,151,.30),transparent 60%),radial-gradient(700px 380px at 98% 75%,rgba(143,217,242,.20),transparent 60%),linear-gradient(180deg,var(--night),var(--deep))}
-.hero .bigstar{position:absolute;right:7%;top:34px;width:230px;opacity:.16}
-.hero h1{font-size:clamp(2.2rem,4.6vw,3.2rem);max-width:760px;position:relative}
-.hero p{max-width:610px;color:#cfe0ec;font-size:1.12rem;margin:18px 0 28px;position:relative}
-.btn{display:inline-block;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;margin:0 10px 8px 0}
-.btn.p{background:var(--aurora);color:#062a1b}.btn.s{border:1px solid #6f8ea3;color:#fff}
-.facts{display:flex;gap:40px;margin-top:38px;position:relative;flex-wrap:wrap}
-.facts b{display:block;font:600 2rem Fraunces,Georgia,serif;color:var(--aurora);line-height:1.1}
-.facts span{font-size:.86rem;color:#b6c9d8}
-.legend{background:var(--paper);border-bottom:1px solid var(--line);font-size:.84rem;color:var(--mut)}
-.legend .wrap{display:flex;gap:22px;align-items:center;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
-.legend .chip{margin:0 6px 0 0}
-section.sec{padding:60px 0}.sec.alt{background:var(--paper)}
-.eyebrow{font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:600;margin-bottom:8px}
-.sec h2{font-size:2rem;margin-bottom:10px}
-.lead{color:var(--mut);max-width:690px;margin:0 0 28px}
-.grid{display:grid;gap:18px}.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
-.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 18px 20px}
-.card h3{font-size:1.08rem;margin-bottom:6px}.card p{margin:0;color:var(--mut);font-size:.93rem}
-.card .n{font:600 .85rem Fraunces,Georgia,serif;color:var(--star);display:block;margin-bottom:6px}
-.card.dash{border-style:dashed;background:transparent}
-.chip{display:inline-block;font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:99px;margin-bottom:10px}
-.live{background:#d6f7e6;color:#0b6b3f}.plan{background:#dff3fb;color:#0b5a78}.idea{background:#fdf0d2;color:#7a5200}
-.feature{display:grid;grid-template-columns:330px 1fr;gap:36px;align-items:start;margin-bottom:26px}
-.feature h2{font-size:1.9rem}
-.q{margin:16px 0 20px;padding:0;list-style:none}
-.q li{padding:9px 0 9px 24px;border-top:1px solid var(--line);position:relative;font-size:.95rem}
-.q li:before{content:'✦';position:absolute;left:0;color:var(--star)}
-.frame{border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 16px 44px rgba(11,26,41,.20);background:#fff}
-.bar{background:#e9e5da;padding:8px 14px;font-size:.78rem;color:var(--mut);display:flex;gap:6px;align-items:center}
-.bar i{width:9px;height:9px;border-radius:50%;background:#c9c3b3;display:inline-block}.bar span{margin-left:10px}
-.frame iframe{display:block;width:100%;height:560px;border:0}
-.lang{color:#9bb2c4;font-size:.82rem;border:1px solid #3b556b;border-radius:4px;padding:3px 9px;white-space:nowrap}
-.kf{display:block;font:600 1.7rem Fraunces,Georgia,serif;color:var(--deep);line-height:1.2;margin-bottom:4px}
-.link{color:var(--deep);font-weight:600;text-decoration:none;border-bottom:2px solid var(--aurora)}
-footer{background:var(--night);color:#b6c9d8;padding:38px 0;font-size:.88rem}
-footer strong{color:#fff;font-family:Fraunces,Georgia,serif;font-size:1.1rem}
-.logos{display:flex;gap:14px;align-items:center;margin-top:18px;flex-wrap:wrap}
-.logos img{height:46px;background:#fff;padding:5px 9px;border-radius:5px}
-.ph{border:1px dashed #5b7488;padding:12px 18px;border-radius:6px;font-size:.78rem;color:#9bb2c4}
-@media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}.g3,.g2,.feature{grid-template-columns:1fr}nav{display:none}}
+html{scroll-behavior:smooth}
+body{margin:0;font:400 17px/1.6 'Source Sans 3','Segoe UI',sans-serif;color:var(--ink);background:#fff}
+h1,h2,h3{font-family:Manrope,'Segoe UI',sans-serif;margin:0;line-height:1.15;letter-spacing:-.01em}
+a{color:inherit}
+img{display:block;max-width:100%}
+.wrap{max-width:1140px;margin:0 auto;padding:0 28px}
+
+/* draft notice */
+.ribbon{background:var(--soft);color:var(--mut);text-align:center;font-size:.8rem;padding:6px 12px;border-bottom:1px solid var(--line)}
+
+/* header */
+header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:68px;gap:24px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand b{font:800 1.25rem Manrope,sans-serif}
+nav a{text-decoration:none;color:var(--mut);font-weight:600;font-size:.95rem;margin-left:26px}
+nav a:hover{color:var(--accent)}
+.lang{font-size:.85rem;color:var(--mut);margin-left:26px}
+.lang b{color:var(--ink)}
+
+/* hero */
+.hero{position:relative;min-height:min(78vh,760px);background:#2a3a48;display:flex;align-items:flex-end;color:#fff;overflow:hidden}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,25,38,.15) 0%,rgba(10,25,38,.35) 45%,rgba(10,25,38,.82) 100%)}
+.hero .wrap{position:relative;z-index:1;padding-bottom:72px;width:100%}
+.hero h1{font-size:clamp(2.4rem,5.4vw,4rem);font-weight:800;max-width:780px}
+.hero p{font-size:1.2rem;max-width:620px;margin:18px 0 30px;color:#e3edf3}
+.btn{display:inline-block;padding:13px 22px;border-radius:999px;font-weight:600;text-decoration:none;margin:0 10px 10px 0;transition:.15s}
+.btn.p{background:#fff;color:var(--ink)}
+.btn.p:hover{background:var(--star)}
+.btn.s{border:1.5px solid rgba(255,255,255,.7);color:#fff}
+.btn.s:hover{background:rgba(255,255,255,.12)}
+.hero .meta{margin-top:26px;font-size:.92rem;color:#c9d9e3}
+.hero .meta span+span:before{content:'·';margin:0 10px}
+
+/* sections */
+section{padding:84px 0}
+.soft{background:var(--soft)}
+.eyebrow{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent);margin-bottom:10px}
+h2{font-size:clamp(1.8rem,3.2vw,2.4rem);font-weight:800;margin-bottom:14px}
+.lead{color:var(--mut);font-size:1.1rem;max-width:640px;margin:0 0 40px}
+
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.tile{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;text-decoration:none;transition:transform .2s,box-shadow .2s}
+.tile:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(20,34,47,.12)}
+.tile .ph{aspect-ratio:4/3;overflow:hidden;background:var(--soft)}
+.tile .ph img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.tile:hover .ph img{transform:scale(1.04)}
+.tile .tx{padding:18px 20px 22px}
+.tile h3{font-size:1.15rem;margin:8px 0 6px}
+.tile p{margin:0;color:var(--mut);font-size:.96rem}
+.tag{display:inline-block;font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
+.tag.demo{background:#dff2ea;color:#11704a}
+.tag.soon{background:#eef1f3;color:var(--mut)}
+
+/* why band */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.split .img{border-radius:16px;overflow:hidden;aspect-ratio:4/5;max-height:560px}
+.split .img img{width:100%;height:100%;object-fit:cover}
+.big{font-family:Manrope,sans-serif;font-size:clamp(1.5rem,2.6vw,2rem);font-weight:700;line-height:1.3;margin:0 0 18px}
+.split p{color:var(--mut);margin:0 0 14px}
+.split p.big{color:var(--ink);margin-bottom:18px}
+
+/* map feature */
+.feature{display:grid;grid-template-columns:5fr 7fr;gap:52px;align-items:center}
+.qs{list-style:none;padding:0;margin:22px 0 28px}
+.qs li{padding:12px 0 12px 30px;border-top:1px solid var(--line);position:relative}
+.qs li:last-child{border-bottom:1px solid var(--line)}
+.qs li:before{content:'';position:absolute;left:4px;top:21px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.btn.a{background:var(--accent);color:#fff}
+.btn.a:hover{background:var(--accent-dk)}
+.shot{display:block;position:relative;border-radius:14px;overflow:hidden;box-shadow:0 22px 50px rgba(20,34,47,.18);text-decoration:none}
+.shot img{width:100%}
+.shot span{position:absolute;right:16px;bottom:16px;background:rgba(20,34,47,.85);color:#fff;font-weight:600;font-size:.9rem;padding:9px 16px;border-radius:999px}
+.maps{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.mapcard .shot{aspect-ratio:3/2}
+.mapcard .shot img{height:100%;object-fit:cover;object-position:left top}
+.mapcard .wp{margin-top:22px;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--mut)}
+.mapcard h3{font-size:1.4rem;margin:6px 0 8px}
+.mapcard p{margin:0;color:var(--mut)}
+
+/* about */
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:28px 0}
+.facts div{border-top:2px solid var(--accent);padding-top:12px}
+.facts b{display:block;font:800 1.5rem Manrope,sans-serif}
+.facts span{font-size:.9rem;color:var(--mut)}
+.partners{font-size:.92rem;color:var(--mut)}
+.link{color:var(--accent);font-weight:600;text-decoration:none;border-bottom:2px solid rgba(14,111,143,.25)}
+.link:hover{border-color:var(--accent)}
+
+/* footer */
+footer{background:var(--ink);color:#b8c6d1;padding:44px 0 36px;font-size:.9rem}
+footer .row{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;align-items:flex-start}
+footer strong{color:#fff;font-family:Manrope,sans-serif;font-size:1.1rem}
+footer .logo{background:#fff;padding:6px 10px;border-radius:6px;height:56px}
+footer .credits{margin-top:26px;padding-top:18px;border-top:1px solid #2b3c4b;font-size:.78rem;color:#8798a6;line-height:1.7}
+footer .credits a{color:#b8c6d1}
+
+@media(max-width:960px){
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .split,.feature,.maps{grid-template-columns:1fr;gap:32px}
+  .split .img{aspect-ratio:16/10}
+  nav{display:none}
+}
+@media(max-width:560px){.tiles,.facts{grid-template-columns:1fr}section{padding:60px 0}}
 </style>
 </head>
 <body>
-<div class="ribbon">Concept mock-up for discussion · all content is placeholder · working title</div>
 
-<header class="top"><div class="wrap">
+<div class="ribbon">Draft for discussion · working title · Finnish version planned</div>
+
+<header><div class="wrap">
   <a class="brand" href="#">
-    <svg width="34" height="34" viewBox="0 0 100 100" aria-hidden="true"><path fill="#f2b84b" d="M50 0 58 42 100 50 58 58 50 100 42 58 0 50 42 42Z"/></svg>
-    <span><b>Northern Star</b><small>Value from the green transition, kept in the region</small></span>
+    <svg width="28" height="28" viewBox="0 0 100 100" aria-hidden="true"><path fill="#e8a838" d="M50 0 58 42 100 50 58 58 50 100 42 58 0 50 42 42Z"/></svg>
+    <b>Northern Star</b>
   </a>
-  <nav><a href="#understand">Understand</a><a href="#cases">Cases</a><a href="#maps">Maps &amp; data</a><a href="#toolkits">Toolkits</a><a href="#learn">Benchmarks &amp; media</a><a href="#network">Network &amp; research</a><a href="#about">About</a></nav>
-  <span class="lang">FI · EN</span>
+  <div>
+    <nav>
+      <a href="#find">What you will find</a>
+      <a href="#map">Maps</a>
+      <a href="#about">About</a>
+      <span class="lang">FI | <b>EN</b></span>
+    </nav>
+  </div>
 </div></header>
 
-<section class="hero">
-  <svg class="bigstar" viewBox="0 0 100 100" aria-hidden="true"><path fill="none" stroke="#fff" stroke-width=".6" d="M50 0 58 42 100 50 58 58 50 100 42 58 0 50 42 42Z"/><circle cx="50" cy="50" r="30" fill="none" stroke="#fff" stroke-width=".3"/></svg>
+<!-- HERO -->
+<section class="hero" style="padding:0">
+  <img src="https://images.unsplash.com/photo-1515614457209-3c7081d62743?auto=format&fit=crop&w=2000&q=75" alt="Wind turbines in a snowy landscape">
   <div class="wrap">
-    <h1>Making green-transition investments work for Northern Ostrobothnia</h1>
-    <p>Research-based knowledge, maps and tools for municipalities, business services and SMEs, so that more of the value created by large energy investments stays in the region.</p>
-    <a class="btn p" href="#maps">Explore the capacity map</a><a class="btn s" href="#understand">Browse the knowledge base</a>
-    <div class="facts">
-      <div><b>30</b><span>municipalities in the region</span></div>
-      <div><b>8</b><span>themes of regional value creation</span></div>
-      <div><b>2025–2027</b><span>ARVO project period</span></div>
-    </div>
+    <h1>Green investments.<br>Local value.</h1>
+    <p>Knowledge, maps and tools that help Northern Ostrobothnia keep more of the value from large energy projects in the region.</p>
+    <a class="btn p" href="#map">Explore the maps</a>
+    <a class="btn s" href="#find">See what is coming</a>
+    <div class="meta"><span>30 municipalities</span><span>2025 to 2027</span><span>Co-funded by the European Union</span></div>
   </div>
 </section>
 
-<div class="legend"><div class="wrap">
-  <span><span class="chip live">Live demo</span>a working prototype exists</span>
-  <span><span class="chip plan">Planned</span>part of the ARVO project plan</span>
-  <span><span class="chip idea">Idea</span>proposed for discussion</span>
-</div></div>
+<!-- WHAT YOU WILL FIND -->
+<section id="find"><div class="wrap">
+  <div class="eyebrow">What you will find</div>
+  <h2>One place for the results of ARVO</h2>
+  <p class="lead">The site grows with the project. Two maps already exist as prototypes; the other parts follow as the research progresses.</p>
+  <div class="tiles">
+    <a class="tile" href="#">
+      <div class="ph"><img src="https://images.unsplash.com/photo-1696578621871-8aa5ea9bdb42?auto=format&fit=crop&w=900&q=75" alt="Road through a Finnish landscape seen from above" loading="lazy"></div>
+      <div class="tx"><span class="tag soon">Coming soon</span><h3>Knowledge</h3><p>Short explainers on how large energy investments affect jobs, firms and the regional economy.</p></div>
+    </a>
+    <a class="tile" href="#map">
+      <div class="ph"><img src="map-preview.jpg" alt="Screenshot of the SME capacity map" loading="lazy"></div>
+      <div class="tx"><span class="tag demo">Demo</span><h3>Maps</h3><p>Where can energy projects be located, and which local firms could supply them?</p></div>
+    </a>
+    <a class="tile" href="#">
+      <div class="ph"><img src="https://images.unsplash.com/photo-1600632519223-ab235891238e?auto=format&fit=crop&w=900&q=75" alt="Offshore wind turbines in the Baltic Sea" loading="lazy"></div>
+      <div class="tx"><span class="tag soon">Coming soon</span><h3>Cases and benchmarks</h3><p>Biogas, wind and solar cases in Finland, and lessons from Norway and Denmark.</p></div>
+    </a>
+    <a class="tile" href="https://www.youtube.com/watch?v=FUbxrEo6zfs" target="_blank" rel="noopener">
+      <div class="ph"><img src="https://images.unsplash.com/photo-1589903308904-1010c2294adc?auto=format&fit=crop&w=900&q=75" alt="Headphones on a microphone" loading="lazy"></div>
+      <div class="tx"><span class="tag demo">Listen now</span><h3>Podcasts and webinars</h3><p>"Arvoa energiasta": a Kertun kulma podcast episode about ARVO (in Finnish).</p></div>
+    </a>
+  </div>
+</div></section>
 
-<section class="sec" id="why"><div class="wrap"><div class="grid g2" style="align-items:center;gap:44px">
+<!-- WHY -->
+<section class="soft"><div class="wrap split">
+  <div class="img"><img src="https://images.unsplash.com/photo-1714504904786-b6732390b206?auto=format&fit=crop&w=1100&q=75" alt="A welder at work in a metal workshop" loading="lazy"></div>
   <div>
-    <div class="eyebrow">Why it matters</div><h2>Investment arrives. Does the value stay?</h2>
-    <p class="lead" style="margin:0">Large green-transition projects bring capital, but part of the value can leave the region when local firms are not part of the supply chain. Understanding how value is created, and kept, is the starting point for successful and accepted projects.</p>
-    <div class="card dash" style="margin-top:20px"><span class="chip idea">Idea</span><h3>Questions from residents</h3><p>Plain answers on local benefits and project acceptability.</p></div>
-  </div>
-  <div class="grid" style="grid-template-columns:repeat(3,1fr)">
-    <div class="card dash"><b class="kf">[ ? ]</b><p>Key figure placeholder</p></div>
-    <div class="card dash"><b class="kf">[ ? ]</b><p>Key figure placeholder</p></div>
-    <div class="card dash"><b class="kf">[ ? ]</b><p>Key figure placeholder</p></div>
-  </div>
-</div></div></section>
-
-<section class="sec alt" id="audience"><div class="wrap">
-  <div class="eyebrow">Who it is for</div><h2>One site, four kinds of readers</h2>
-  <p class="lead">The content is organised around the questions each group asks, not around the project's work packages.</p>
-  <div class="grid g4">
-    <div class="card"><h3>Municipalities and the regional council</h3><p>Plan siting, land use and procurement so that more value stays local.</p></div>
-    <div class="card"><h3>Business development organisations</h3><p>Guide companies and investors towards local partners.</p></div>
-    <div class="card"><h3>SMEs and growth firms</h3><p>Understand what large projects need and how to become a supplier.</p></div>
-    <div class="card"><h3>Investors and EPC contractors</h3><p>Find local capacity and understand the regional context.</p></div>
+    <div class="eyebrow">Why it matters</div>
+    <p class="big">Large projects bring investment to the region. Whether the value stays depends on who does the work.</p>
+    <p>Wind, solar and hydrogen projects are usually built by large contractors with global supply chains. A small local firm can rarely meet the volume, delivery time and paperwork alone.</p>
+    <p>Together, local firms can do more. ARVO studies how to make that possible, and Northern Star shares what we learn.</p>
   </div>
 </div></section>
 
-<section class="sec" id="understand"><div class="wrap">
-  <div class="eyebrow">Understand</div><h2>Knowledge by theme</h2>
-  <p class="lead">Short, evidence-based explainers on the eight themes that connect green investments to the regional economy.</p>
-  <div class="grid g4">
-    <div class="card"><span class="n">01</span><h3>Economic effects</h3><p>Local inputs, services and supplier-network effects.</p></div>
-    <div class="card"><span class="n">02</span><h3>Local industry</h3><p>Technology adoption and innovation in regional firms.</p></div>
-    <div class="card"><span class="n">03</span><h3>SME participation</h3><p>How small firms join large value chains.</p></div>
-    <div class="card"><span class="n">04</span><h3>Regional distribution</h3><p>Who benefits: cities, towns or the countryside.</p></div>
-    <div class="card"><span class="n">05</span><h3>Employment</h3><p>Number and quality of local jobs.</p></div>
-    <div class="card"><span class="n">06</span><h3>Sustainability</h3><p>Environmental and social effects.</p></div>
-    <div class="card"><span class="n">07</span><h3>Policy and institutions</h3><p>Regulation and the political climate.</p></div>
-    <div class="card"><span class="n">08</span><h3>Trade and investment</h3><p>Investments, imports and exports.</p></div>
-  </div>
-</div></section>
-
-<section class="sec alt" id="maps"><div class="wrap">
-  <div class="eyebrow">Maps and data</div>
-  <div class="feature">
-    <div>
-      <span class="chip live">Live demo</span>
-      <h2>SME capacity map</h2>
-      <p class="lead" style="margin-bottom:0">Shows how much of a large project's demand regional SMEs could cover together, and where support would help.</p>
-      <ul class="q">
-        <li>Can local firms together supply this project?</li>
-        <li>Where are the capability gaps?</li>
-        <li>How does the answer change with the buyer's priorities?</li>
-      </ul>
-      <a class="link" href="index.html">Open the full demo →</a>
+<!-- MAP -->
+<section id="map"><div class="wrap">
+  <div class="eyebrow">Maps</div>
+  <h2>Two questions, two maps</h2>
+  <p class="lead">Both maps are working prototypes with illustrative data. Real data will be added during the project.</p>
+  <div class="maps">
+    <div class="mapcard">
+      <a class="shot" href="https://experience.arcgis.com/experience/96aaf9ca22244e1f8cff8eccfaaa9882" target="_blank" rel="noopener"><img src="landuse-map-preview.jpg" alt="Screenshot of the plot value and land use map"><span>Open the map →</span></a>
+      <div class="wp">Work package 2</div>
+      <h3>Where could projects be located?</h3>
+      <p>The plot value and land use map shows land use (Corine Land Cover) and plot prices across Northern Ostrobothnia, with filters to find suitable sites for energy production and infrastructure.</p>
     </div>
-    <div class="frame">
-      <div class="bar"><i></i><i></i><i></i><span>SME capacity map · demonstration with illustrative data</span></div>
-      <iframe src="index.html" title="SME capacity map (live demo)"></iframe>
+    <div class="mapcard">
+      <a class="shot" href="index.html"><img src="map-preview.jpg" alt="Screenshot of the SME capacity map"><span>Open the map →</span></a>
+      <div class="wp">Work package 4</div>
+      <h3>Who could supply them?</h3>
+      <p>The SME capacity map shows which local firms could supply a large project as a group, how much of the demand they could cover, and where support would help.</p>
     </div>
   </div>
-  <div class="grid g3">
-    <div class="card dash"><span class="chip plan">Planned</span><h3>Energy and infrastructure maps</h3><p>Wind, solar and hydrogen sites, grid and transport links (WP2).</p></div>
-    <div class="card dash"><span class="chip plan">Planned</span><h3>Hydrogen logistics model</h3><p>Where distributed production and transport make sense (WP2).</p></div>
-    <div class="card dash"><span class="chip idea">Idea</span><h3>Value-chain explorer</h3><p>An interactive diagram of a typical investment, showing where local firms can enter.</p></div>
-    <div class="card dash"><span class="chip idea">Idea</span><h3>Investment pipeline</h3><p>Announced projects in the region, from public sources.</p></div>
-    <div class="card dash"><span class="chip idea">Idea</span><h3>Indicator dashboard</h3><p>Key regional indicators in one view.</p></div>
-    <div class="card dash"><span class="chip idea">Idea</span><h3>Regional value calculator</h3><p>A rough estimate of local jobs and turnover for a given project.</p></div>
-  </div>
 </div></section>
 
-<section class="sec" id="cases"><div class="wrap">
-  <div class="eyebrow">Cases</div><h2>How value chains meet the regional economy</h2>
-  <p class="lead">Each case follows the same template: the investment, its value chain, what stayed local, and the lessons.</p>
-  <div class="grid g3">
-    <div class="card"><span class="chip plan">Planned</span><h3>Biogas plant</h3><p>Case report and short video (WP1).</p></div>
-    <div class="card"><span class="chip plan">Planned</span><h3>Offshore wind</h3><p>Case report and short video (WP1).</p></div>
-    <div class="card"><span class="chip plan">Planned</span><h3>Solar power</h3><p>Case report and short video (WP1).</p></div>
+<!-- ABOUT -->
+<section id="about" class="soft"><div class="wrap split">
+  <div>
+    <div class="eyebrow">About</div>
+    <h2>The ARVO project</h2>
+    <p>ARVO (Value added from sustainable energy business) studies how large green-transition investments can create more value, jobs and new business in Northern Ostrobothnia. The project is carried out by the Kerttu Saalasti Institute, University of Oulu.</p>
+    <div class="facts">
+      <div><b>30</b><span>municipalities in the region</span></div>
+      <div><b>2025 to 2027</b><span>project period</span></div>
+      <div><b>6</b><span>work packages</span></div>
+    </div>
+    <p class="partners">Co-funded by the European Union (ERDF), with the City of Oulu, Nivala, Haapajärvi, Vaala, Raahen Seudun Kehitys, Haapaveden-Siikalatvan seutukunnan kehittämiskeskus and STEK.</p>
+    <p><a class="link" href="https://www.oulu.fi/en/projects/added-value-sustainable-energy-business-arvo" target="_blank" rel="noopener">Project page at the University of Oulu</a></p>
   </div>
-</div></section>
-
-<section class="sec alt" id="toolkits"><div class="wrap">
-  <div class="eyebrow">Toolkits</div><h2>Practical guidance for each audience</h2>
-  <p class="lead">Checklists and guides that turn research results into decisions.</p>
-  <div class="grid g4">
-    <div class="card dash"><span class="chip idea">Idea</span><h3>For municipalities</h3><p>A checklist for siting, procurement and local content.</p></div>
-    <div class="card dash"><span class="chip idea">Idea</span><h3>For business development</h3><p>How to steer companies and investors towards local partners.</p></div>
-    <div class="card dash"><span class="chip idea">Idea</span><h3>For SMEs</h3><p>How to become an EPC supplier: requirements and a self-check.</p></div>
-    <div class="card dash"><span class="chip idea">Idea</span><h3>For investors and EPCs</h3><p>How to work with local suppliers.</p></div>
-  </div>
-</div></section>
-
-<section class="sec" id="learn"><div class="wrap">
-  <div class="eyebrow">Benchmarks and media</div><h2>Learn from others, follow the project</h2>
-  <p class="lead">&nbsp;</p>
-  <div class="grid g3">
-    <div class="card"><span class="chip plan">Planned</span><h3>Norway</h3><p>Offshore clusters and local content (WP3).</p></div>
-    <div class="card"><span class="chip plan">Planned</span><h3>Denmark</h3><p>Wind power and local entrepreneurship (WP3).</p></div>
-    <div class="card"><span class="chip plan">Planned</span><h3>Cluster models</h3><p>How cluster networks help local firms join large projects (WP3).</p></div>
-    <div class="card"><span class="chip plan">Planned</span><h3>Podcasts and webinars</h3><p>Research made easy to follow (WP6).</p></div>
-    <div class="card"><span class="chip plan">Planned</span><h3>Blog and newsletter</h3><p>News, results and events (WP6).</p></div>
-    <div class="card"><span class="chip plan">Planned</span><h3>Videos and infographics</h3><p>Results in a visual, shareable form (WP6).</p></div>
-  </div>
-</div></section>
-
-<section class="sec alt" id="network"><div class="wrap">
-  <div class="eyebrow">Network, research and publications</div><h2>Join the work and read the results</h2>
-  <p class="lead">&nbsp;</p>
-  <div class="grid g4">
-    <div class="card"><span class="chip plan">Planned</span><h3>Partner network</h3><p>Companies, municipalities and business services, with workshops, events and a join form.</p></div>
-    <div class="card dash"><span class="chip idea">Idea</span><h3>Meet the buyer</h3><p>Events where EPC contractors present their needs and local SMEs respond.</p></div>
-    <div class="card"><span class="chip plan">Planned</span><h3>Research needs and funding</h3><p>Open questions and a roadmap for follow-up projects (WP5).</p></div>
-    <div class="card"><span class="chip plan">Planned</span><h3>Reports and publications</h3><p>Project reports, policy briefs and articles.</p></div>
-  </div>
-</div></section>
-
-<section class="sec" id="about"><div class="wrap">
-  <div class="eyebrow">About</div><h2>The ARVO project</h2>
-  <p class="lead">&nbsp;</p>
-  <div class="grid g4">
-    <div class="card"><span class="chip plan">Planned</span><h3>About the project</h3><p>Aims, work packages and timeline.</p></div>
-    <div class="card"><span class="chip plan">Planned</span><h3>Team</h3><p>Researchers and contact persons.</p></div>
-    <div class="card"><span class="chip plan">Planned</span><h3>Steering group and funders</h3><p>Partners and co-funders.</p></div>
-    <div class="card"><span class="chip plan">Planned</span><h3>Contact</h3><p>Questions and feedback.</p></div>
-  </div>
+  <div class="img"><img src="https://images.unsplash.com/photo-1742639008233-6747489ba7a4?auto=format&fit=crop&w=1100&q=75" alt="A cabin by a lake in Finland" loading="lazy"></div>
 </div></section>
 
 <footer><div class="wrap">
-  <strong>Northern Star</strong> · concept for the ARVO project (Added Value from Sustainable Energy Business)<br>
-  Kerttu Saalasti Institute, University of Oulu · project period 1 April 2025 – 31 December 2027<br>Finnish and English versions, an accessibility statement and a data protection notice are planned.
-  <div class="logos">
-    <img src="KSI_logo_ENG.jpg" alt="Kerttu Saalasti Institute, University of Oulu" onerror="this.style.display='none'">
-    <span class="ph">EU / ERDF logo (placeholder)</span><span class="ph">Regional Council logo (placeholder)</span>
+  <div class="row">
+    <div><strong>Northern Star</strong><br>A service of the ARVO project<br>Kerttu Saalasti Institute, University of Oulu</div>
+    <div style="display:flex;gap:14px;align-items:center">
+      <img class="logo" src="KSI_logo_ENG.jpg" alt="Kerttu Saalasti Institute, University of Oulu" onerror="this.style.display='none'">
+    </div>
+  </div>
+  <div class="credits">
+    Photos from Unsplash:
+    <a href="https://unsplash.com/@jasonblackeye" target="_blank" rel="noopener">Jason Mavrommatis</a>,
+    <a href="https://unsplash.com/@htn_films" target="_blank" rel="noopener">Hubert Neufeld</a>,
+    <a href="https://unsplash.com/@mary_ray" target="_blank" rel="noopener">Mary Ray</a>,
+    <a href="https://unsplash.com/@willfrancis" target="_blank" rel="noopener">Will Francis</a>,
+    <a href="https://unsplash.com/@cmrcn_" target="_blank" rel="noopener">Cemrecan Yurtman</a>,
+    <a href="https://unsplash.com/@tomiblasic" target="_blank" rel="noopener">Tomi Blasic</a>.
+    Map data © OpenStreetMap contributors.
   </div>
 </div></footer>
+
 </body>
 </html>
